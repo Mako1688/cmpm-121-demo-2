@@ -40,10 +40,12 @@ app.appendChild(clearButton);
 
 // Drawing logic
 const ctx = canvas.getContext("2d")!;
-let drawing: Array<Array<{ x: number; y: number }>> = [];
-let currentPath: Array<{ x: number; y: number }> = [];
+type Point = { x: number; y: number };
+let drawing: Array<Array<Point>> = [];
+let currentPath: Array<Point> = [];
 const cursor = { active: false, x: 0, y: 0 };
 
+// Mouse down event logic
 canvas.addEventListener("mousedown", (event: MouseEvent) => {
   cursor.active = true;
   cursor.x = event.offsetX;
@@ -53,7 +55,7 @@ canvas.addEventListener("mousedown", (event: MouseEvent) => {
   canvas.dispatchEvent(new Event("drawing-changed"));
 });
 
-// Add mouse move event logic (for when mouse is held down)
+// Mouse move event logic (for when mouse is held down)
 canvas.addEventListener("mousemove", (event: MouseEvent) => {
   if (cursor.active) {
     cursor.x = event.offsetX;
@@ -63,28 +65,29 @@ canvas.addEventListener("mousemove", (event: MouseEvent) => {
   }
 });
 
-// Add mouse up event logic
+// Mouse up event logic
 canvas.addEventListener("mouseup", () => {
   cursor.active = false;
 });
 
-// Add clear button event logic
+// Clear button event logic
 clearButton.addEventListener("click", () => {
-    drawing = [];
-    canvas.dispatchEvent(new Event("drawing-changed"));
+  drawing = [];
+  canvas.dispatchEvent(new Event("drawing-changed"));
 });
 
+// Drawing changed event logic
 canvas.addEventListener("drawing-changed", () => {
-    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    drawing.forEach((path) => {
-        ctx.beginPath();
-        path.forEach(({ x, y }, index) => {
-        if (index === 0) {
-            ctx.moveTo(x, y);
-        } else {
-            ctx.lineTo(x, y);
-        }
-        });
-        ctx.stroke();
+  ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  drawing.forEach(path => {
+    ctx.beginPath();
+    path.forEach((point, index) => {
+      if (index === 0) {
+        ctx.moveTo(point.x, point.y);
+      } else {
+        ctx.lineTo(point.x, point.y);
+      }
     });
+    ctx.stroke();
+  });
 });
