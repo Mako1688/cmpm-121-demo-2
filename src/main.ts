@@ -13,6 +13,7 @@ document.title = APP_NAME;
 const createTitleElement = (text: string): HTMLHeadingElement => {
   const titleElement = document.createElement("h1");
   titleElement.textContent = text;
+  titleElement.className = "title"; // Add class for styling
   return titleElement;
 };
 
@@ -21,6 +22,7 @@ const createCanvas = (width: number, height: number): HTMLCanvasElement => {
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
+  canvas.style.backgroundColor = "white"; // Set canvas background to white
   return canvas;
 };
 
@@ -31,16 +33,21 @@ const createButton = (text: string): HTMLButtonElement => {
   return button;
 };
 
-// Append the title, canvas, and buttons to the app element
+// Append the title and canvas to the app element
 app.appendChild(createTitleElement(APP_NAME));
 const canvas = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
 app.appendChild(canvas);
+
+// Create and append buttons below the canvas
+const buttonContainer = document.createElement("div");
+buttonContainer.className = "button-container";
 const clearButton = createButton("Clear");
-app.appendChild(clearButton);
 const undoButton = createButton("Undo");
-app.appendChild(undoButton);
 const redoButton = createButton("Redo");
-app.appendChild(redoButton);
+buttonContainer.appendChild(clearButton);
+buttonContainer.appendChild(undoButton);
+buttonContainer.appendChild(redoButton);
+app.appendChild(buttonContainer);
 
 // Drawing logic
 const ctx = canvas.getContext("2d")!;
@@ -87,9 +94,7 @@ clearButton.addEventListener("click", () => {
 undoButton.addEventListener("click", () => {
   if (drawing.length > 0) {
     const lastPath = drawing.pop();
-    if (lastPath) {
-      redoStack.push(lastPath);
-    }
+    redoStack.push(lastPath!);
     canvas.dispatchEvent(new Event("drawing-changed"));
   }
 });
@@ -98,9 +103,7 @@ undoButton.addEventListener("click", () => {
 redoButton.addEventListener("click", () => {
   if (redoStack.length > 0) {
     const lastPath = redoStack.pop();
-    if (lastPath) {
-      drawing.push(lastPath);
-    }
+    drawing.push(lastPath!);
     canvas.dispatchEvent(new Event("drawing-changed"));
   }
 });
