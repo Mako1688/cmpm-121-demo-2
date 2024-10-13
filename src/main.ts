@@ -24,25 +24,30 @@ const createCanvas = (width: number, height: number): HTMLCanvasElement => {
   return canvas;
 };
 
-// Create a clear button
-const createClearButton = (): HTMLButtonElement => {
+// Create a button element
+const createButton = (text: string): HTMLButtonElement => {
   const button = document.createElement("button");
-  button.textContent = "Clear";
+  button.textContent = text;
   return button;
 };
 
-// Append the title, canvas, and clear button elements to the app element
+// Append the title, canvas, and buttons to the app element
 app.appendChild(createTitleElement(APP_NAME));
 const canvas = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
 app.appendChild(canvas);
-const clearButton = createClearButton();
+const clearButton = createButton("Clear");
 app.appendChild(clearButton);
+const undoButton = createButton("Undo");
+app.appendChild(undoButton);
+const redoButton = createButton("Redo");
+app.appendChild(redoButton);
 
 // Drawing logic
 const ctx = canvas.getContext("2d")!;
 type Point = { x: number; y: number };
 let drawing: Array<Array<Point>> = [];
 let currentPath: Array<Point> = [];
+let redoStack: Array<Array<Point>> = [];
 const cursor = { active: false, x: 0, y: 0 };
 
 // Mouse down event logic
@@ -52,6 +57,7 @@ canvas.addEventListener("mousedown", (event: MouseEvent) => {
   cursor.y = event.offsetY;
   currentPath = [{ x: cursor.x, y: cursor.y }];
   drawing.push(currentPath);
+  redoStack = []; // Clear redo stack on new drawing action
   canvas.dispatchEvent(new Event("drawing-changed"));
 });
 
@@ -73,7 +79,30 @@ canvas.addEventListener("mouseup", () => {
 // Clear button event logic
 clearButton.addEventListener("click", () => {
   drawing = [];
+  redoStack = [];
   canvas.dispatchEvent(new Event("drawing-changed"));
+});
+
+// Undo button event logic
+undoButton.addEventListener("click", () => {
+  if (drawing.length > 0) {
+    const lastPath = drawing.pop();
+    if (lastPath) {
+      redoStack.push(lastPath);
+    }
+    canvas.dispatchEvent(new Event("drawing-changed"));
+  }
+});
+
+// Redo button event logic
+redoButton.addEventListener("click", () => {
+  if (redoStack.length > 0) {
+    const lastPath = redoStack.pop();
+    if (lastPath) {
+      drawing.push(lastPath);
+    }
+    canvas.dispatchEvent(new Event("drawing-changed"));
+  }
 });
 
 // Drawing changed event logic
