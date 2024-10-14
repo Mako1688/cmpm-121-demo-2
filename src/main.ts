@@ -13,7 +13,7 @@ document.title = APP_NAME;
 const createTitleElement = (text: string): HTMLHeadingElement => {
   const titleElement = document.createElement("h1");
   titleElement.textContent = text;
-  titleElement.className = "title"; // Add class for styling
+  titleElement.className = "title";
   return titleElement;
 };
 
@@ -22,7 +22,7 @@ const createCanvas = (width: number, height: number): HTMLCanvasElement => {
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
-  canvas.style.backgroundColor = "white"; // Set canvas background to white
+  canvas.style.backgroundColor = "white";
   return canvas;
 };
 
@@ -49,12 +49,36 @@ buttonContainer.appendChild(undoButton);
 buttonContainer.appendChild(redoButton);
 app.appendChild(buttonContainer);
 
+// MarkerLine class
+class MarkerLine {
+  private points: Array<{ x: number; y: number }>;
+
+  constructor(initialX: number, initialY: number) {
+    this.points = [{ x: initialX, y: initialY }];
+  }
+
+  drag(x: number, y: number) {
+    this.points.push({ x, y });
+  }
+
+  display(ctx: CanvasRenderingContext2D) {
+    ctx.beginPath();
+    this.points.forEach((point, index) => {
+      if (index === 0) {
+        ctx.moveTo(point.x, point.y);
+      } else {
+        ctx.lineTo(point.x, point.y);
+      }
+    });
+    ctx.stroke();
+  }
+}
+
 // Drawing logic
 const ctx = canvas.getContext("2d")!;
-type Point = { x: number; y: number };
-let drawing: Array<Array<Point>> = [];
-let currentPath: Array<Point> = [];
-let redoStack: Array<Array<Point>> = [];
+let drawing: Array<MarkerLine> = [];
+let currentLine: MarkerLine | null = null;
+let redoStack: Array<MarkerLine> = [];
 const cursor = { active: false, x: 0, y: 0 };
 
 // Mouse down event logic
@@ -62,18 +86,18 @@ canvas.addEventListener("mousedown", (event: MouseEvent) => {
   cursor.active = true;
   cursor.x = event.offsetX;
   cursor.y = event.offsetY;
-  currentPath = [{ x: cursor.x, y: cursor.y }];
-  drawing.push(currentPath);
+  currentLine = new MarkerLine(cursor.x, cursor.y);
+  drawing.push(currentLine);
   redoStack = []; // Clear redo stack on new drawing action
   canvas.dispatchEvent(new Event("drawing-changed"));
 });
 
 // Mouse move event logic (for when mouse is held down)
 canvas.addEventListener("mousemove", (event: MouseEvent) => {
-  if (cursor.active) {
+  if (cursor.active && currentLine) {
     cursor.x = event.offsetX;
     cursor.y = event.offsetY;
-    currentPath.push({ x: cursor.x, y: cursor.y });
+    currentLine.drag(cursor.x, cursor.y);
     canvas.dispatchEvent(new Event("drawing-changed"));
   }
 });
@@ -81,6 +105,7 @@ canvas.addEventListener("mousemove", (event: MouseEvent) => {
 // Mouse up event logic
 canvas.addEventListener("mouseup", () => {
   cursor.active = false;
+  currentLine = null;
 });
 
 // Clear button event logic
@@ -93,8 +118,8 @@ clearButton.addEventListener("click", () => {
 // Undo button event logic
 undoButton.addEventListener("click", () => {
   if (drawing.length > 0) {
-    const lastPath = drawing.pop();
-    redoStack.push(lastPath!);
+    const lastLine = drawing.pop();
+    redoStack.push(lastLine!);
     canvas.dispatchEvent(new Event("drawing-changed"));
   }
 });
@@ -102,8 +127,8 @@ undoButton.addEventListener("click", () => {
 // Redo button event logic
 redoButton.addEventListener("click", () => {
   if (redoStack.length > 0) {
-    const lastPath = redoStack.pop();
-    drawing.push(lastPath!);
+    const lastLine = redoStack.pop();
+    drawing.push(lastLine!);
     canvas.dispatchEvent(new Event("drawing-changed"));
   }
 });
@@ -111,15 +136,5 @@ redoButton.addEventListener("click", () => {
 // Drawing changed event logic
 canvas.addEventListener("drawing-changed", () => {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-  drawing.forEach(path => {
-    ctx.beginPath();
-    path.forEach((point, index) => {
-      if (index === 0) {
-        ctx.moveTo(point.x, point.y);
-      } else {
-        ctx.lineTo(point.x, point.y);
-      }
-    });
-    ctx.stroke();
-  });
+  drawing.forEach(line => line.display(ctx));
 });
