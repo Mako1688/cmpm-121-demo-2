@@ -38,7 +38,13 @@ h1 {
   line-height: 1.1;
 }
 
+/* Center the app content */
 #app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
@@ -89,6 +95,26 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* Selected tool button style */
+.selectedTool {
+  border-color: #ff0000; /* Red border for selected tool */
+}
+
+/* Container for tool buttons */
+.tool-container {
+  display: flex;
+  flex-direction: column;
+  margin-right: 10px;
+}
+
+/* Container for canvas and tool buttons */
+.canvas-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
 }
 
 /* Light mode styles */

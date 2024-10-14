@@ -33,10 +33,26 @@ const createButton = (text: string): HTMLButtonElement => {
   return button;
 };
 
-// Append the title and canvas to the app element
+// Append title to the app element
 app.appendChild(createTitleElement(APP_NAME));
+
+// Create a container for the canvas and tool buttons
+const canvasContainer = document.createElement("div");
+canvasContainer.className = "canvas-container";
+app.appendChild(canvasContainer);
+
+// Create and append tool buttons to the side of the canvas
+const toolContainer = document.createElement("div");
+toolContainer.className = "tool-container";
+const thinButton = createButton("Thin");
+const thickButton = createButton("Thick");
+toolContainer.appendChild(thinButton);
+toolContainer.appendChild(thickButton);
+canvasContainer.appendChild(toolContainer);
+
+// Append the canvas to the canvas container
 const canvas = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
-app.appendChild(canvas);
+canvasContainer.appendChild(canvas);
 
 // Create and append buttons below the canvas
 const buttonContainer = document.createElement("div");
@@ -49,12 +65,14 @@ buttonContainer.appendChild(undoButton);
 buttonContainer.appendChild(redoButton);
 app.appendChild(buttonContainer);
 
-// MarkerLine class to handle drawing lines
+// MarkerLine class to handle drawing lines with different thickness
 class MarkerLine {
   private points: Array<{ x: number; y: number }>;
+  private thickness: number;
 
-  constructor(initialX: number, initialY: number) {
+  constructor(initialX: number, initialY: number, thickness: number) {
     this.points = [{ x: initialX, y: initialY }];
+    this.thickness = thickness;
   }
 
   drag(x: number, y: number) {
@@ -63,6 +81,7 @@ class MarkerLine {
 
   display(ctx: CanvasRenderingContext2D) {
     ctx.beginPath();
+    ctx.lineWidth = this.thickness;
     this.points.forEach((point, index) => {
       if (index === 0) {
         ctx.moveTo(point.x, point.y);
@@ -74,25 +93,25 @@ class MarkerLine {
   }
 }
 
-// Drawing logic
+// Drawing state and logic
 const ctx = canvas.getContext("2d")!;
 let drawing: Array<MarkerLine> = [];
 let currentLine: MarkerLine | null = null;
 let redoStack: Array<MarkerLine> = [];
 const cursor = { active: false, x: 0, y: 0 };
+let currentThickness = 1; // Default thickness
 
-// Mouse down event logic
+// Event listeners for drawing actions
 canvas.addEventListener("mousedown", (event: MouseEvent) => {
   cursor.active = true;
   cursor.x = event.offsetX;
   cursor.y = event.offsetY;
-  currentLine = new MarkerLine(cursor.x, cursor.y);
+  currentLine = new MarkerLine(cursor.x, cursor.y, currentThickness);
   drawing.push(currentLine);
   redoStack = []; // Clear redo stack on new drawing action
   canvas.dispatchEvent(new Event("drawing-changed"));
 });
 
-// Mouse move event logic (for when mouse is held down)
 canvas.addEventListener("mousemove", (event: MouseEvent) => {
   if (cursor.active && currentLine) {
     cursor.x = event.offsetX;
@@ -102,20 +121,18 @@ canvas.addEventListener("mousemove", (event: MouseEvent) => {
   }
 });
 
-// Mouse up event logic
 canvas.addEventListener("mouseup", () => {
   cursor.active = false;
   currentLine = null;
 });
 
-// Clear button event logic
+// Event listeners for button actions
 clearButton.addEventListener("click", () => {
   drawing = [];
   redoStack = [];
   canvas.dispatchEvent(new Event("drawing-changed"));
 });
 
-// Undo button event logic
 undoButton.addEventListener("click", () => {
   if (drawing.length > 0) {
     const lastLine = drawing.pop();
@@ -124,7 +141,6 @@ undoButton.addEventListener("click", () => {
   }
 });
 
-// Redo button event logic
 redoButton.addEventListener("click", () => {
   if (redoStack.length > 0) {
     const lastLine = redoStack.pop();
@@ -133,7 +149,20 @@ redoButton.addEventListener("click", () => {
   }
 });
 
-// Drawing changed event logic
+// Event listeners for tool selection
+thinButton.addEventListener("click", () => {
+  currentThickness = 1;
+  thinButton.classList.add("selectedTool");
+  thickButton.classList.remove("selectedTool");
+});
+
+thickButton.addEventListener("click", () => {
+  currentThickness = 5;
+  thickButton.classList.add("selectedTool");
+  thinButton.classList.remove("selectedTool");
+});
+
+// Redraw the canvas whenever the drawing changes
 canvas.addEventListener("drawing-changed", () => {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   drawing.forEach(line => line.display(ctx));
