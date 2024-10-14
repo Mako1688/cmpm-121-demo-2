@@ -93,11 +93,36 @@ class MarkerLine {
   }
 }
 
+// ToolPreview class to handle drawing the tool preview
+class ToolPreview {
+  private x: number;
+  private y: number;
+  private thickness: number;
+
+  constructor(x: number, y: number, thickness: number) {
+    this.x = x;
+    this.y = y;
+    this.thickness = thickness;
+  }
+
+  updatePosition(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.thickness / 2, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+}
+
 // Drawing state and logic
 const ctx = canvas.getContext("2d")!;
 let drawing: Array<MarkerLine> = [];
 let currentLine: MarkerLine | null = null;
 let redoStack: Array<MarkerLine> = [];
+let toolPreview: ToolPreview | null = null;
 const cursor = { active: false, x: 0, y: 0 };
 let currentThickness = 1; // Default thickness
 
@@ -113,11 +138,18 @@ canvas.addEventListener("mousedown", (event: MouseEvent) => {
 });
 
 canvas.addEventListener("mousemove", (event: MouseEvent) => {
+  cursor.x = event.offsetX;
+  cursor.y = event.offsetY;
   if (cursor.active && currentLine) {
-    cursor.x = event.offsetX;
-    cursor.y = event.offsetY;
     currentLine.drag(cursor.x, cursor.y);
     canvas.dispatchEvent(new Event("drawing-changed"));
+  } else {
+    if (!toolPreview) {
+      toolPreview = new ToolPreview(cursor.x, cursor.y, currentThickness);
+    } else {
+      toolPreview.updatePosition(cursor.x, cursor.y);
+    }
+    canvas.dispatchEvent(new Event("tool-moved"));
   }
 });
 
@@ -158,9 +190,12 @@ const selectTool = (
   currentThickness = thickness;
   selectedButton.classList.add("selectedTool");
   otherButton.classList.remove("selectedTool");
+  if (toolPreview) {
+    toolPreview = new ToolPreview(cursor.x, cursor.y, currentThickness);
+    canvas.dispatchEvent(new Event("tool-moved"));
+  }
 };
 
-//thin and thick button event listeners
 thinButton.addEventListener("click", () =>
   selectTool(1, thinButton, thickButton)
 );
@@ -172,6 +207,10 @@ thickButton.addEventListener("click", () =>
 const redrawCanvas = () => {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   drawing.forEach((line) => line.display(ctx));
+  if (!cursor.active && toolPreview) {
+    toolPreview.draw(ctx);
+  }
 };
 
 canvas.addEventListener("drawing-changed", redrawCanvas);
+canvas.addEventListener("tool-moved", redrawCanvas);
