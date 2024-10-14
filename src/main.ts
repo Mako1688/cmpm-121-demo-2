@@ -196,6 +196,7 @@ const selectTool = (
   }
 };
 
+// Event listeners for tool selection
 thinButton.addEventListener("click", () =>
   selectTool(1, thinButton, thickButton)
 );
