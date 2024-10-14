@@ -45,10 +45,6 @@ h1 {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
 }
 
 .logo {
@@ -147,4 +143,25 @@ canvas {
 
 .title {
   text-align: center; /* Center the title text */
+}
+
+/* Container for sticker buttons */
+.sticker-container {
+  display: flex;
+  flex-direction: row;
+  margin-top: 10px;
+}
+
+/* Light mode styles */
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
 }
