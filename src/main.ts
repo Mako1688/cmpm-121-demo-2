@@ -31,47 +31,48 @@ const createButton = (text: string): HTMLButtonElement => {
   return button;
 };
 
+const createContainer = (className: string): HTMLDivElement => {
+  const container = document.createElement("div");
+  container.className = className;
+  return container;
+};
+
+const appendButtons = (container: HTMLDivElement, buttons: HTMLButtonElement[]) => {
+  buttons.forEach(button => container.appendChild(button));
+};
+
 // Append title to the app element
 app.appendChild(createTitleElement(APP_NAME));
 
-// Create a container for the canvas and tool buttons
-const canvasContainer = document.createElement("div");
-canvasContainer.className = "canvas-container";
+// Create and append the canvas container
+const canvasContainer = createContainer("canvas-container");
 app.appendChild(canvasContainer);
 
 // Append the canvas to the canvas container
 const canvas = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
 canvasContainer.appendChild(canvas);
 
-// Create and append buttons below the canvas
-const buttonContainer = document.createElement("div");
-buttonContainer.className = "button-container";
-const thinButton = createButton("Thin");
-const thickButton = createButton("Thick");
-buttonContainer.appendChild(thinButton);
-buttonContainer.appendChild(thickButton);
-app.appendChild(buttonContainer);
-
 // Create and append tool buttons to the side of the canvas
-const toolContainer = document.createElement("div");
-toolContainer.className = "tool-container";
+const toolContainer = createContainer("tool-container");
 const clearButton = createButton("Clear");
 const undoButton = createButton("Undo");
 const redoButton = createButton("Redo");
-toolContainer.appendChild(clearButton);
-toolContainer.appendChild(undoButton);
-toolContainer.appendChild(redoButton);
+appendButtons(toolContainer, [clearButton, undoButton, redoButton]);
 canvasContainer.appendChild(toolContainer);
 
+// Create and append buttons below the canvas
+const buttonContainer = createContainer("button-container");
+const thinButton = createButton("Thin");
+const thickButton = createButton("Thick");
+appendButtons(buttonContainer, [thinButton, thickButton]);
+app.appendChild(buttonContainer);
+
 // Create and append sticker buttons below the undo container
-const stickerContainer = document.createElement("div");
-stickerContainer.className = "sticker-container";
+const stickerContainer = createContainer("sticker-container");
 const skullButton = createButton("💀");
 const heartButton = createButton("❤️");
 const fireButton = createButton("🔥");
-stickerContainer.appendChild(skullButton);
-stickerContainer.appendChild(heartButton);
-stickerContainer.appendChild(fireButton);
+appendButtons(stickerContainer, [skullButton, heartButton, fireButton]);
 app.appendChild(stickerContainer);
 
 // MarkerLine class to handle drawing lines with different thickness
@@ -109,12 +110,7 @@ class ToolPreview {
   private thickness: number | null;
   private emoji: string | null;
 
-  constructor(
-    x: number,
-    y: number,
-    thickness: number | null = null,
-    emoji: string | null = null
-  ) {
+  constructor(x: number, y: number, thickness: number | null = null, emoji: string | null = null) {
     this.x = x;
     this.y = y;
     this.thickness = thickness;
@@ -206,12 +202,7 @@ canvas.addEventListener("mousemove", (event: MouseEvent) => {
     canvas.dispatchEvent(new Event("drawing-changed"));
   } else {
     if (!toolPreview) {
-      toolPreview = new ToolPreview(
-        cursor.x,
-        cursor.y,
-        currentThickness,
-        currentEmoji
-      );
+      toolPreview = new ToolPreview(cursor.x, cursor.y, currentThickness, currentEmoji);
     } else {
       toolPreview.updatePosition(cursor.x, cursor.y);
     }
@@ -259,7 +250,7 @@ const selectTool = (
   currentEmoji = null; // Reset current emoji
   selectedButton.classList.add("selectedTool");
   otherButton.classList.remove("selectedTool");
-  stickerButtons.forEach((button) => button.classList.remove("selectedTool"));
+  stickerButtons.forEach(button => button.classList.remove("selectedTool"));
   if (toolPreview) {
     toolPreview.updateTool(currentThickness, null);
     canvas.dispatchEvent(new Event("tool-moved"));
@@ -274,15 +265,15 @@ thickButton.addEventListener("click", () =>
 );
 
 // Event listeners for sticker selection
-const selectSticker = (
-  emoji: string,
-  selectedButton: HTMLButtonElement,
-  toolButtons: HTMLButtonElement[]
-) => {
+const selectSticker = (emoji: string, selectedButton: HTMLButtonElement, stickerButtons: HTMLButtonElement[]) => {
   currentEmoji = emoji;
   currentThickness = 0; // Reset current thickness
   selectedButton.classList.add("selectedTool");
-  toolButtons.forEach((button) => button.classList.remove("selectedTool"));
+  stickerButtons.forEach(button => {
+    if (button !== selectedButton) {
+      button.classList.remove("selectedTool");
+    }
+  });
   if (toolPreview) {
     toolPreview.updateTool(null, currentEmoji);
     canvas.dispatchEvent(new Event("tool-moved"));
@@ -290,13 +281,13 @@ const selectSticker = (
 };
 
 skullButton.addEventListener("click", () =>
-  selectSticker("💀", skullButton, [thinButton, thickButton])
+  selectSticker("💀", skullButton, [skullButton, heartButton, fireButton])
 );
 heartButton.addEventListener("click", () =>
-  selectSticker("❤️", heartButton, [thinButton, thickButton])
+  selectSticker("❤️", heartButton, [skullButton, heartButton, fireButton])
 );
 fireButton.addEventListener("click", () =>
-  selectSticker("🔥", fireButton, [thinButton, thickButton])
+  selectSticker("🔥", fireButton, [skullButton, heartButton, fireButton])
 );
 
 // Redraw the canvas whenever the drawing changes
