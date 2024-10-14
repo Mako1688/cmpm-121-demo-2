@@ -37,8 +37,11 @@ const createContainer = (className: string): HTMLDivElement => {
   return container;
 };
 
-const appendButtons = (container: HTMLDivElement, buttons: HTMLButtonElement[]) => {
-  buttons.forEach(button => container.appendChild(button));
+const appendButtons = (
+  container: HTMLDivElement,
+  buttons: HTMLButtonElement[]
+) => {
+  buttons.forEach((button) => container.appendChild(button));
 };
 
 // Append title to the app element
@@ -72,8 +75,13 @@ const stickerContainer = createContainer("sticker-container");
 const skullButton = createButton("💀");
 const heartButton = createButton("❤️");
 const fireButton = createButton("🔥");
-const customButton = createButton("Custom");
-appendButtons(stickerContainer, [skullButton, heartButton, fireButton, customButton]);
+const customButton = createButton("✨"); // Custom button for custom stickers
+appendButtons(stickerContainer, [
+  skullButton,
+  heartButton,
+  fireButton,
+  customButton,
+]);
 app.appendChild(stickerContainer);
 
 // MarkerLine class to handle drawing lines with different thickness
@@ -111,7 +119,12 @@ class ToolPreview {
   private thickness: number | null;
   private emoji: string | null;
 
-  constructor(x: number, y: number, thickness: number | null = null, emoji: string | null = null) {
+  constructor(
+    x: number,
+    y: number,
+    thickness: number | null = null,
+    emoji: string | null = null
+  ) {
     this.x = x;
     this.y = y;
     this.thickness = thickness;
@@ -205,7 +218,12 @@ canvas.addEventListener("mousemove", (event: MouseEvent) => {
     canvas.dispatchEvent(new Event("drawing-changed"));
   } else {
     if (!toolPreview) {
-      toolPreview = new ToolPreview(cursor.x, cursor.y, currentThickness, currentEmoji);
+      toolPreview = new ToolPreview(
+        cursor.x,
+        cursor.y,
+        currentThickness,
+        currentEmoji
+      );
     } else {
       toolPreview.updatePosition(cursor.x, cursor.y);
     }
@@ -253,7 +271,7 @@ const selectTool = (
   currentEmoji = null; // Reset current emoji
   selectedButton.classList.add("selectedTool");
   otherButton.classList.remove("selectedTool");
-  stickerButtons.forEach(button => button.classList.remove("selectedTool"));
+  stickerButtons.forEach((button) => button.classList.remove("selectedTool"));
   if (toolPreview) {
     toolPreview.updateTool(currentThickness, null);
     canvas.dispatchEvent(new Event("tool-moved"));
@@ -261,18 +279,32 @@ const selectTool = (
 };
 
 thinButton.addEventListener("click", () =>
-  selectTool(thinThickness, thinButton, thickButton, [skullButton, heartButton, fireButton, customButton])
+  selectTool(thinThickness, thinButton, thickButton, [
+    skullButton,
+    heartButton,
+    fireButton,
+    customButton,
+  ])
 );
 thickButton.addEventListener("click", () =>
-  selectTool(thickThickness, thickButton, thinButton, [skullButton, heartButton, fireButton, customButton])
+  selectTool(thickThickness, thickButton, thinButton, [
+    skullButton,
+    heartButton,
+    fireButton,
+    customButton,
+  ])
 );
 
 // Event listeners for sticker selection
-const selectSticker = (emoji: string, selectedButton: HTMLButtonElement, stickerButtons: HTMLButtonElement[]) => {
+const selectSticker = (
+  emoji: string,
+  selectedButton: HTMLButtonElement,
+  stickerButtons: HTMLButtonElement[]
+) => {
   currentEmoji = emoji;
   currentThickness = 0; // Reset current thickness
   selectedButton.classList.add("selectedTool");
-  stickerButtons.forEach(button => {
+  stickerButtons.forEach((button) => {
     if (button !== selectedButton) {
       button.classList.remove("selectedTool");
     }
@@ -284,21 +316,40 @@ const selectSticker = (emoji: string, selectedButton: HTMLButtonElement, sticker
 };
 
 skullButton.addEventListener("click", () =>
-  selectSticker("💀", skullButton, [skullButton, heartButton, fireButton, customButton])
+  selectSticker("💀", skullButton, [
+    skullButton,
+    heartButton,
+    fireButton,
+    customButton,
+  ])
 );
 heartButton.addEventListener("click", () =>
-  selectSticker("❤️", heartButton, [skullButton, heartButton, fireButton, customButton])
+  selectSticker("❤️", heartButton, [
+    skullButton,
+    heartButton,
+    fireButton,
+    customButton,
+  ])
 );
 fireButton.addEventListener("click", () =>
-  selectSticker("🔥", fireButton, [skullButton, heartButton, fireButton, customButton])
+  selectSticker("🔥", fireButton, [
+    skullButton,
+    heartButton,
+    fireButton,
+    customButton,
+  ])
 );
 customButton.addEventListener("click", () => {
   const customSticker = prompt("Enter a custom emoji", "✨");
   if (customSticker) {
-    selectSticker(customSticker, customButton, [skullButton, heartButton, fireButton, customButton])
+    selectSticker(customSticker, customButton, [
+      skullButton,
+      heartButton,
+      fireButton,
+      customButton,
+    ]);
   }
 });
-
 
 // Redraw the canvas whenever the drawing changes
 const redrawCanvas = () => {
