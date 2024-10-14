@@ -150,20 +150,28 @@ redoButton.addEventListener("click", () => {
 });
 
 // Event listeners for tool selection
-thinButton.addEventListener("click", () => {
-  currentThickness = 1;
-  thinButton.classList.add("selectedTool");
-  thickButton.classList.remove("selectedTool");
-});
+const selectTool = (
+  thickness: number,
+  selectedButton: HTMLButtonElement,
+  otherButton: HTMLButtonElement
+) => {
+  currentThickness = thickness;
+  selectedButton.classList.add("selectedTool");
+  otherButton.classList.remove("selectedTool");
+};
 
-thickButton.addEventListener("click", () => {
-  currentThickness = 5;
-  thickButton.classList.add("selectedTool");
-  thinButton.classList.remove("selectedTool");
-});
+//thin and thick button event listeners
+thinButton.addEventListener("click", () =>
+  selectTool(1, thinButton, thickButton)
+);
+thickButton.addEventListener("click", () =>
+  selectTool(5, thickButton, thinButton)
+);
 
 // Redraw the canvas whenever the drawing changes
-canvas.addEventListener("drawing-changed", () => {
+const redrawCanvas = () => {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-  drawing.forEach(line => line.display(ctx));
-});
+  drawing.forEach((line) => line.display(ctx));
+};
+
+canvas.addEventListener("drawing-changed", redrawCanvas);
