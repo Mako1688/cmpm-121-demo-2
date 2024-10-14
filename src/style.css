@@ -61,10 +61,12 @@ h1 {
   padding: 2em;
 }
 
+/* General styles for documentation links */
 .read-the-docs {
   color: #888;
 }
 
+/* Button styles */
 button {
   padding: 5px 10px;
   font-size: 16px;
@@ -77,14 +79,19 @@ button {
   transition: border-color 0.25s;
   margin-top: 10px;
 }
+
+/* Button hover state */
 button:hover {
   border-color: #646cff;
 }
+
+/* Button focus states */
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* Light mode styles */
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

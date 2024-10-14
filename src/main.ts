@@ -49,7 +49,7 @@ buttonContainer.appendChild(undoButton);
 buttonContainer.appendChild(redoButton);
 app.appendChild(buttonContainer);
 
-// MarkerLine class
+// MarkerLine class to handle drawing lines
 class MarkerLine {
   private points: Array<{ x: number; y: number }>;
 
