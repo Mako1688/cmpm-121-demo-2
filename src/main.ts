@@ -60,7 +60,8 @@ const toolContainer = createContainer("tool-container");
 const clearButton = createButton("Clear");
 const undoButton = createButton("Undo");
 const redoButton = createButton("Redo");
-appendButtons(toolContainer, [clearButton, undoButton, redoButton]);
+const exportButton = createButton("Export");
+appendButtons(toolContainer, [clearButton, undoButton, redoButton, exportButton]);
 canvasContainer.appendChild(toolContainer);
 
 // Create and append buttons below the canvas
@@ -75,7 +76,7 @@ const stickerContainer = createContainer("sticker-container");
 const skullButton = createButton("💀");
 const heartButton = createButton("❤️");
 const fireButton = createButton("🔥");
-const customButton = createButton("✨"); // Custom button for custom stickers
+const customButton = createButton("Custom"); // Custom button for custom stickers
 appendButtons(stickerContainer, [
   skullButton,
   heartButton,
@@ -83,6 +84,8 @@ appendButtons(stickerContainer, [
   customButton,
 ]);
 app.appendChild(stickerContainer);
+
+
 
 // MarkerLine class to handle drawing lines with different thickness
 class MarkerLine {
@@ -258,6 +261,34 @@ redoButton.addEventListener("click", () => {
     drawing.push(lastItem!);
     canvas.dispatchEvent(new Event("drawing-changed"));
   }
+});
+
+exportButton.addEventListener("click", () => {
+  //create new canvas size 1024x1024
+  const exportCanvas = document.createElement("canvas");
+  exportCanvas.width = 1024;
+  exportCanvas.height = 1024;
+  const exportCtx = exportCanvas.getContext("2d")!;
+
+  //scale the context to fill the larger canvas
+  exportCtx.scale(4, 4);
+
+  //Execute all items on the display list against the new context
+  drawing.forEach((item) => item.display(exportCtx));
+
+  //Trigger a file download with the contents of the export canvas as a PNG
+  exportCanvas.toBlob((blob) => {
+    if (blob) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "drawing.png";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  });
 });
 
 // Event listeners for tool selection
