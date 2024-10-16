@@ -152,6 +152,18 @@ canvas {
   margin-top: 10px;
 }
 
+.controls-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.slider-container,
+.sticker-container {
+  margin-bottom: 10px;
+}
+
 /* Light mode styles */
 @media (prefers-color-scheme: light) {
   :root {
