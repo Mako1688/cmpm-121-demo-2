@@ -4,6 +4,8 @@ import "./style.css";
 const APP_NAME = "Mako Paint 🎨";
 const CANVAS_WIDTH = 256;
 const CANVAS_HEIGHT = 256;
+const EXPORT_CANVAS_SIZE = 1024;
+const SCALE_FACTOR = 4;
 
 // Get the app element and set the title of the document
 const app = document.querySelector<HTMLDivElement>("#app")!;
@@ -61,7 +63,12 @@ const clearButton = createButton("Clear");
 const undoButton = createButton("Undo");
 const redoButton = createButton("Redo");
 const exportButton = createButton("Export");
-appendButtons(toolContainer, [clearButton, undoButton, redoButton, exportButton]);
+appendButtons(toolContainer, [
+  clearButton,
+  undoButton,
+  redoButton,
+  exportButton,
+]);
 canvasContainer.appendChild(toolContainer);
 
 // Create and append buttons below the canvas
@@ -84,8 +91,6 @@ appendButtons(stickerContainer, [
   customButton,
 ]);
 app.appendChild(stickerContainer);
-
-
 
 // MarkerLine class to handle drawing lines with different thickness
 class MarkerLine {
@@ -264,19 +269,19 @@ redoButton.addEventListener("click", () => {
 });
 
 exportButton.addEventListener("click", () => {
-  //create new canvas size 1024x1024
+  // Create a new canvas of size 1024x1024
   const exportCanvas = document.createElement("canvas");
-  exportCanvas.width = 1024;
-  exportCanvas.height = 1024;
+  exportCanvas.width = EXPORT_CANVAS_SIZE;
+  exportCanvas.height = EXPORT_CANVAS_SIZE;
   const exportCtx = exportCanvas.getContext("2d")!;
 
-  //scale the context to fill the larger canvas
-  exportCtx.scale(4, 4);
+  // Scale the context to fill the larger canvas
+  exportCtx.scale(SCALE_FACTOR, SCALE_FACTOR);
 
-  //Execute all items on the display list against the new context
+  // Execute all items on the display list against the new context
   drawing.forEach((item) => item.display(exportCtx));
 
-  //Trigger a file download with the contents of the export canvas as a PNG
+  // Trigger a file download with the contents of the canvas as a PNG file
   exportCanvas.toBlob((blob) => {
     if (blob) {
       const url = URL.createObjectURL(blob);
