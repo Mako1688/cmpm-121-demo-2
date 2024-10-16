@@ -60,8 +60,11 @@ const createContainer = (className: string): HTMLDivElement => {
   return container;
 };
 
-const appendButtons = (container: HTMLDivElement, buttons: HTMLButtonElement[]) => {
-  buttons.forEach(button => container.appendChild(button));
+const appendButtons = (
+  container: HTMLDivElement,
+  buttons: HTMLButtonElement[]
+) => {
+  buttons.forEach((button) => container.appendChild(button));
 };
 
 // Append title to the app element
@@ -157,7 +160,12 @@ class ToolPreview {
   private thickness: number | null;
   private emoji: string | null;
 
-  constructor(x: number, y: number, thickness: number | null = null, emoji: string | null = null) {
+  constructor(
+    x: number,
+    y: number,
+    thickness: number | null = null,
+    emoji: string | null = null
+  ) {
     this.x = x;
     this.y = y;
     this.thickness = thickness;
@@ -228,7 +236,12 @@ canvas.addEventListener("mousedown", (event: MouseEvent) => {
   cursor.x = event.offsetX;
   cursor.y = event.offsetY;
   if (currentEmoji) {
-    currentSticker = new Sticker(cursor.x, cursor.y, currentEmoji, currentThickness);
+    currentSticker = new Sticker(
+      cursor.x,
+      cursor.y,
+      currentEmoji,
+      currentThickness
+    );
     drawing.push(currentSticker);
     redoStack = []; // Clear redo stack on new drawing action
     canvas.dispatchEvent(new Event("drawing-changed"));
@@ -251,7 +264,12 @@ canvas.addEventListener("mousemove", (event: MouseEvent) => {
     canvas.dispatchEvent(new Event("drawing-changed"));
   } else {
     if (!toolPreview) {
-      toolPreview = new ToolPreview(cursor.x, cursor.y, currentThickness, currentEmoji);
+      toolPreview = new ToolPreview(
+        cursor.x,
+        cursor.y,
+        currentThickness,
+        currentEmoji
+      );
     } else {
       toolPreview.updatePosition(cursor.x, cursor.y);
     }
@@ -289,7 +307,9 @@ redoButton.addEventListener("click", () => {
 });
 
 // Event listener for thickness slider
-const thicknessSlider = thicknessSliderContainer.querySelector("input") as HTMLInputElement;
+const thicknessSlider = thicknessSliderContainer.querySelector(
+  "input"
+) as HTMLInputElement;
 thicknessSlider.addEventListener("input", (event: Event) => {
   const target = event.target as HTMLInputElement;
   currentThickness = parseInt(target.value, 10);
@@ -410,5 +430,3 @@ exportButton.addEventListener("click", () => {
     }
   });
 });
-
-
