@@ -114,6 +114,18 @@ const hueSliderContainer = createLabeledSlider(
   MIN_HUE,
   "Hue"
 );
+
+//crteate a circle to disply the current hue color
+const hueColorDisplay = document.createElement("div");
+hueColorDisplay.style.width = "20px";
+hueColorDisplay.style.height = "20px";
+hueColorDisplay.style.borderRadius = "50%";
+hueColorDisplay.style.border = "1px solid #000";
+hueColorDisplay.style.display = "inline-block";
+hueColorDisplay.style.marginLeft = "10px";
+hueColorDisplay.style.backgroundColor = `hsl(${MIN_HUE}, 100%, 50%)`;
+const hueSliderLabel = hueSliderContainer.querySelector("label")!;
+hueSliderLabel.appendChild(hueColorDisplay);
 sliderContainer.appendChild(hueSliderContainer);
 // const rotationSliderContainer = createLabeledSlider(
 //   MIN_ROTATION,
@@ -389,6 +401,7 @@ const hueSlider = hueSliderContainer.querySelector("input") as HTMLInputElement;
 hueSlider.addEventListener("input", (event: Event) => {
   const target = event.target as HTMLInputElement;
   currentHue = parseInt(target.value, 10);
+  hueColorDisplay.style.backgroundColor = `hsl(${currentHue}, 100%, 50%)`;
   if (toolPreview) {
     toolPreview.updateTool(
       currentThickness,
