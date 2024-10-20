@@ -8,6 +8,10 @@ const EXPORT_CANVAS_SIZE = 1024;
 const SCALE_FACTOR = 4;
 const MIN_THICKNESS = 1;
 const MAX_THICKNESS = 10;
+const MIN_HUE = 0;
+const MAX_HUE = 360;
+// const MIN_ROTATION = 0;
+// const MAX_ROTATION = 360;
 
 // Get the app element and set the title of the document
 const app = document.querySelector<HTMLDivElement>("#app")!;
@@ -104,6 +108,20 @@ const thicknessSliderContainer = createLabeledSlider(
   "Thickness"
 );
 sliderContainer.appendChild(thicknessSliderContainer);
+const hueSliderContainer = createLabeledSlider(
+  MIN_HUE,
+  MAX_HUE,
+  MIN_HUE,
+  "Hue"
+);
+sliderContainer.appendChild(hueSliderContainer);
+// const rotationSliderContainer = createLabeledSlider(
+//   MIN_ROTATION,
+//   MAX_ROTATION,
+//   MIN_ROTATION,
+//   "Rotation"
+// );
+// sliderContainer.appendChild(rotationSliderContainer);
 controlsContainer.appendChild(sliderContainer);
 
 // Create and append sticker buttons below the slider
@@ -129,10 +147,17 @@ app.appendChild(controlsContainer);
 class MarkerLine {
   private points: Array<{ x: number; y: number }>;
   private thickness: number;
+  private hue: number | null;
 
-  constructor(initialX: number, initialY: number, thickness: number) {
+  constructor(
+    initialX: number,
+    initialY: number,
+    thickness: number,
+    hue: number | null = null
+  ) {
     this.points = [{ x: initialX, y: initialY }];
     this.thickness = thickness;
+    this.hue = hue;
   }
 
   drag(x: number, y: number) {
@@ -142,6 +167,7 @@ class MarkerLine {
   display(ctx: CanvasRenderingContext2D) {
     ctx.beginPath();
     ctx.lineWidth = this.thickness;
+    ctx.strokeStyle = `hsl(${this.hue}, 100%, 50%)`; // Set the hue to the current hue
     this.points.forEach((point, index) => {
       if (index === 0) {
         ctx.moveTo(point.x, point.y);
@@ -159,17 +185,23 @@ class ToolPreview {
   private y: number;
   private thickness: number | null;
   private emoji: string | null;
+  private hue: number | null;
+  private rotation: number | null;
 
   constructor(
     x: number,
     y: number,
     thickness: number | null = null,
-    emoji: string | null = null
+    emoji: string | null = null,
+    hue: number | null = null,
+    rotation: number | null = null
   ) {
     this.x = x;
     this.y = y;
     this.thickness = thickness;
     this.emoji = emoji;
+    this.hue = hue;
+    this.rotation = rotation;
   }
 
   updatePosition(x: number, y: number) {
@@ -177,16 +209,25 @@ class ToolPreview {
     this.y = y;
   }
 
-  updateTool(thickness: number | null, emoji: string | null) {
+  updateTool(
+    thickness: number | null,
+    emoji: string | null,
+    hue: number | null = null,
+    rotation: number | null = null
+  ) {
     this.thickness = thickness;
     this.emoji = emoji;
+    this.hue = hue;
+    this.rotation = rotation;
   }
 
   draw(ctx: CanvasRenderingContext2D) {
     if (this.emoji) {
       ctx.font = `${this.thickness! * 4}px serif`;
       ctx.fillText(this.emoji, this.x, this.y);
+      // ctx.rotate((this.rotation! * Math.PI) / 180);
     } else if (this.thickness) {
+      ctx.strokeStyle = `hsl(${this.hue}, 100%, 50%)`; // Set the hue to the current hue
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.thickness / 2, 0, Math.PI * 2);
       ctx.stroke();
@@ -200,12 +241,20 @@ class Sticker {
   private y: number;
   private emoji: string;
   private size: number;
+  private rotation: number;
 
-  constructor(x: number, y: number, emoji: string, size: number) {
+  constructor(
+    x: number,
+    y: number,
+    emoji: string,
+    size: number,
+    rotation: number
+  ) {
     this.x = x;
     this.y = y;
     this.emoji = emoji;
     this.size = size * 4; // Emoji size is 4 times the thickness
+    this.rotation = rotation;
   }
 
   drag(x: number, y: number) {
@@ -216,6 +265,7 @@ class Sticker {
   display(ctx: CanvasRenderingContext2D) {
     ctx.font = `${this.size}px serif`;
     ctx.fillText(this.emoji, this.x, this.y);
+    // ctx.rotate((this.rotation * Math.PI) / 180);
   }
 }
 
@@ -229,6 +279,8 @@ let toolPreview: ToolPreview | null = null;
 const cursor = { active: false, x: 0, y: 0 };
 let currentThickness = MIN_THICKNESS; // Default thickness
 let currentEmoji: string | null = null; // Current emoji for stickers
+let currentHue = 0; // Default hue for drawing
+let currentRotation = 0; // Default rotation for stickers
 
 // Event listeners for drawing actions
 canvas.addEventListener("mousedown", (event: MouseEvent) => {
@@ -240,13 +292,19 @@ canvas.addEventListener("mousedown", (event: MouseEvent) => {
       cursor.x,
       cursor.y,
       currentEmoji,
-      currentThickness
+      currentThickness,
+      currentRotation
     );
     drawing.push(currentSticker);
     redoStack = []; // Clear redo stack on new drawing action
     canvas.dispatchEvent(new Event("drawing-changed"));
   } else {
-    currentLine = new MarkerLine(cursor.x, cursor.y, currentThickness);
+    currentLine = new MarkerLine(
+      cursor.x,
+      cursor.y,
+      currentThickness,
+      currentHue
+    );
     drawing.push(currentLine);
     redoStack = []; // Clear redo stack on new drawing action
     canvas.dispatchEvent(new Event("drawing-changed"));
@@ -268,7 +326,9 @@ canvas.addEventListener("mousemove", (event: MouseEvent) => {
         cursor.x,
         cursor.y,
         currentThickness,
-        currentEmoji
+        currentEmoji,
+        currentHue,
+        currentRotation
       );
     } else {
       toolPreview.updatePosition(cursor.x, cursor.y);
@@ -314,10 +374,49 @@ thicknessSlider.addEventListener("input", (event: Event) => {
   const target = event.target as HTMLInputElement;
   currentThickness = parseInt(target.value, 10);
   if (toolPreview) {
-    toolPreview.updateTool(currentThickness, currentEmoji);
+    toolPreview.updateTool(
+      currentThickness,
+      currentEmoji,
+      currentHue,
+      currentRotation
+    );
     canvas.dispatchEvent(new Event("tool-moved"));
   }
 });
+
+//event listener for hue slider
+const hueSlider = hueSliderContainer.querySelector("input") as HTMLInputElement;
+hueSlider.addEventListener("input", (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  currentHue = parseInt(target.value, 10);
+  if (toolPreview) {
+    toolPreview.updateTool(
+      currentThickness,
+      currentEmoji,
+      currentHue,
+      currentRotation
+    );
+    canvas.dispatchEvent(new Event("tool-moved"));
+  }
+});
+
+//event listener for rotation slider
+// const rotationSlider = rotationSliderContainer.querySelector(
+//   "input"
+// ) as HTMLInputElement;
+// rotationSlider.addEventListener("input", (event: Event) => {
+//   const target = event.target as HTMLInputElement;
+//   currentRotation = parseInt(target.value, 10);
+//   if (toolPreview) {
+//     toolPreview.updateTool(
+//       currentThickness,
+//       currentEmoji,
+//       currentHue,
+//       currentRotation
+//     );
+//     canvas.dispatchEvent(new Event("tool-moved"));
+//   }
+// });
 
 // Event listeners for sticker selection
 const selectSticker = (
@@ -333,7 +432,12 @@ const selectSticker = (
     }
   });
   if (toolPreview) {
-    toolPreview.updateTool(currentThickness, currentEmoji);
+    toolPreview.updateTool(
+      currentThickness,
+      currentEmoji,
+      currentHue,
+      currentRotation
+    );
     canvas.dispatchEvent(new Event("tool-moved"));
   }
 };
@@ -345,7 +449,7 @@ penButton.addEventListener("click", () => {
     button.classList.remove("selectedTool");
   });
   if (toolPreview) {
-    toolPreview.updateTool(currentThickness, null);
+    toolPreview.updateTool(currentThickness, null, currentHue, currentRotation);
     canvas.dispatchEvent(new Event("tool-moved"));
   }
 });
