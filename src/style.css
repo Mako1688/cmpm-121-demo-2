@@ -113,20 +113,6 @@ button:focus-visible {
   margin: 0 auto;
 }
 
-/* Light mode styles */
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
-
 canvas {
   border: 1px solid black;
   border-radius: 8px;
