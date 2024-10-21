@@ -10,8 +10,8 @@ const MIN_THICKNESS = 1;
 const MAX_THICKNESS = 10;
 const MIN_HUE = 0;
 const MAX_HUE = 360;
-// const MIN_ROTATION = 0;
-// const MAX_ROTATION = 360;
+const MIN_ROTATION = 0;
+const MAX_ROTATION = 360;
 
 // Get the app element and set the title of the document
 const app = document.querySelector<HTMLDivElement>("#app")!;
@@ -127,13 +127,13 @@ hueColorDisplay.style.backgroundColor = `hsl(${MIN_HUE}, 100%, 50%)`;
 const hueSliderLabel = hueSliderContainer.querySelector("label")!;
 hueSliderLabel.appendChild(hueColorDisplay);
 sliderContainer.appendChild(hueSliderContainer);
-// const rotationSliderContainer = createLabeledSlider(
-//   MIN_ROTATION,
-//   MAX_ROTATION,
-//   MIN_ROTATION,
-//   "Rotation"
-// );
-// sliderContainer.appendChild(rotationSliderContainer);
+const rotationSliderContainer = createLabeledSlider(
+  MIN_ROTATION,
+  MAX_ROTATION,
+  MIN_ROTATION,
+  "Rotation"
+);
+sliderContainer.appendChild(rotationSliderContainer);
 controlsContainer.appendChild(sliderContainer);
 
 // Create and append sticker buttons below the slider
@@ -235,9 +235,12 @@ class ToolPreview {
 
   draw(ctx: CanvasRenderingContext2D) {
     if (this.emoji) {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate((this.rotation! * Math.PI) / 180);
       ctx.font = `${this.thickness! * 4}px serif`;
-      ctx.fillText(this.emoji, this.x, this.y);
-      // ctx.rotate((this.rotation! * Math.PI) / 180);
+      ctx.fillText(this.emoji, 0, 0);
+      ctx.restore();
     } else if (this.thickness) {
       ctx.strokeStyle = `hsl(${this.hue}, 100%, 50%)`; // Set the hue to the current hue
       ctx.beginPath();
@@ -275,9 +278,12 @@ class Sticker {
   }
 
   display(ctx: CanvasRenderingContext2D) {
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate((this.rotation * Math.PI) / 180);
     ctx.font = `${this.size}px serif`;
-    ctx.fillText(this.emoji, this.x, this.y);
-    // ctx.rotate((this.rotation * Math.PI) / 180);
+    ctx.fillText(this.emoji, 0, 0);
+    ctx.restore();
   }
 }
 
@@ -414,22 +420,22 @@ hueSlider.addEventListener("input", (event: Event) => {
 });
 
 //event listener for rotation slider
-// const rotationSlider = rotationSliderContainer.querySelector(
-//   "input"
-// ) as HTMLInputElement;
-// rotationSlider.addEventListener("input", (event: Event) => {
-//   const target = event.target as HTMLInputElement;
-//   currentRotation = parseInt(target.value, 10);
-//   if (toolPreview) {
-//     toolPreview.updateTool(
-//       currentThickness,
-//       currentEmoji,
-//       currentHue,
-//       currentRotation
-//     );
-//     canvas.dispatchEvent(new Event("tool-moved"));
-//   }
-// });
+const rotationSlider = rotationSliderContainer.querySelector(
+  "input"
+) as HTMLInputElement;
+rotationSlider.addEventListener("input", (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  currentRotation = parseInt(target.value, 10);
+  if (toolPreview) {
+    toolPreview.updateTool(
+      currentThickness,
+      currentEmoji,
+      currentHue,
+      currentRotation
+    );
+    canvas.dispatchEvent(new Event("tool-moved"));
+  }
+});
 
 // Event listeners for sticker selection
 const selectSticker = (
