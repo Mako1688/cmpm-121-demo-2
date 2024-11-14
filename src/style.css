@@ -145,6 +145,15 @@ canvas {
   margin-top: 20px;
 }
 
+.hue-color-display {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid black;
+  display: inline-block;
+  margin-left: 10px;
+}
+
 .slider-container,
 .sticker-container {
   margin-bottom: 10px;
