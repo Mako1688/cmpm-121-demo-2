@@ -459,14 +459,20 @@ const selectSticker = (
 penButton.addEventListener("click", () => {
   currentEmoji = null;
   penButton.classList.add("selectedTool");
-  [skullButton, heartButton, fireButton, customButton].forEach((button) => {
-    button.classList.remove("selectedTool");
-  });
+
+  deselectButtons([skullButton, heartButton, fireButton, customButton]);
+
   if (toolPreview) {
     toolPreview.updateTool(currentThickness, null, currentHue, currentRotation);
     canvas.dispatchEvent(new Event("tool-moved"));
   }
 });
+
+function deselectButtons(buttons: HTMLButtonElement[]): void {
+  buttons.forEach((button) => {
+    button.classList.remove("selectedTool");
+  });
+}
 
 skullButton.addEventListener("click", () =>
   selectSticker("💀", skullButton, [
