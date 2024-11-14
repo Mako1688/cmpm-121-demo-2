@@ -6,12 +6,12 @@ const CANVAS_WIDTH = 256;
 const CANVAS_HEIGHT = 256;
 const EXPORT_CANVAS_SIZE = 1024;
 const SCALE_FACTOR = 4;
-const MIN_THICKNESS = 1;
-const MAX_THICKNESS = 10;
-const MIN_HUE = 0;
-const MAX_HUE = 360;
-const MIN_ROTATION = 0;
-const MAX_ROTATION = 360;
+
+const SLIDER_CONFIG = {
+  THICKNESS: { MIN: 1, MAX: 10 },
+  HUE: { MIN: 0, MAX: 360 },
+  ROTATION: { MIN: 0, MAX: 360 },
+};
 
 // Get the app element and set the title of the document
 const app = document.querySelector<HTMLDivElement>("#app")!;
@@ -24,6 +24,9 @@ const createTitleElement = (text: string): HTMLHeadingElement => {
   titleElement.className = "title";
   return titleElement;
 };
+
+// Append title to the app element
+app.appendChild(createTitleElement(APP_NAME));
 
 const createCanvas = (width: number, height: number): HTMLCanvasElement => {
   const canvas = document.createElement("canvas");
@@ -42,7 +45,6 @@ const createButton = (text: string): HTMLButtonElement => {
 const createLabeledSlider = (
   min: number,
   max: number,
-  value: number,
   labelText: string
 ): HTMLDivElement => {
   const container = document.createElement("div");
@@ -52,7 +54,7 @@ const createLabeledSlider = (
   slider.type = "range";
   slider.min = min.toString();
   slider.max = max.toString();
-  slider.value = value.toString();
+  slider.value = min.toString();
   label.appendChild(slider);
   container.appendChild(label);
   return container;
@@ -71,9 +73,6 @@ const appendButtons = (
   buttons.forEach((button) => container.appendChild(button));
 };
 
-// Append title to the app element
-app.appendChild(createTitleElement(APP_NAME));
-
 // Create and append the canvas container
 const canvasContainer = createContainer("canvas-container");
 app.appendChild(canvasContainer);
@@ -88,6 +87,7 @@ const clearButton = createButton("Clear");
 const undoButton = createButton("Undo");
 const redoButton = createButton("Redo");
 const exportButton = createButton("Export");
+
 appendButtons(toolContainer, [
   clearButton,
   undoButton,
@@ -102,35 +102,28 @@ const controlsContainer = createContainer("controls-container");
 // Create and append slider below the canvas
 const sliderContainer = createContainer("slider-container");
 const thicknessSliderContainer = createLabeledSlider(
-  MIN_THICKNESS,
-  MAX_THICKNESS,
-  MIN_THICKNESS,
+  SLIDER_CONFIG.THICKNESS.MIN,
+  SLIDER_CONFIG.THICKNESS.MAX,
   "Thickness"
 );
 sliderContainer.appendChild(thicknessSliderContainer);
 const hueSliderContainer = createLabeledSlider(
-  MIN_HUE,
-  MAX_HUE,
-  MIN_HUE,
+  SLIDER_CONFIG.HUE.MIN,
+  SLIDER_CONFIG.HUE.MAX,
   "Hue"
 );
 
 //crteate a circle to disply the current hue color
 const hueColorDisplay = document.createElement("div");
-hueColorDisplay.style.width = "20px";
-hueColorDisplay.style.height = "20px";
-hueColorDisplay.style.borderRadius = "50%";
-hueColorDisplay.style.border = "1px solid #000";
-hueColorDisplay.style.display = "inline-block";
-hueColorDisplay.style.marginLeft = "10px";
-hueColorDisplay.style.backgroundColor = `hsl(${MIN_HUE}, 100%, 50%)`;
+hueColorDisplay.classList.add("hue-color-display");
+
+hueColorDisplay.style.backgroundColor = `hsl(${SLIDER_CONFIG.THICKNESS.MIN}, 100%, 50%)`;
 const hueSliderLabel = hueSliderContainer.querySelector("label")!;
 hueSliderLabel.appendChild(hueColorDisplay);
 sliderContainer.appendChild(hueSliderContainer);
 const rotationSliderContainer = createLabeledSlider(
-  MIN_ROTATION,
-  MAX_ROTATION,
-  MIN_ROTATION,
+  SLIDER_CONFIG.ROTATION.MIN,
+  SLIDER_CONFIG.ROTATION.MAX,
   "Rotation"
 );
 sliderContainer.appendChild(rotationSliderContainer);
@@ -295,7 +288,7 @@ let currentSticker: Sticker | null = null;
 let redoStack: Array<MarkerLine | Sticker> = [];
 let toolPreview: ToolPreview | null = null;
 const cursor = { active: false, x: 0, y: 0 };
-let currentThickness = MIN_THICKNESS; // Default thickness
+let currentThickness = SLIDER_CONFIG.THICKNESS.MIN; // Default thickness
 let currentEmoji: string | null = null; // Current emoji for stickers
 let currentHue = 0; // Default hue for drawing
 let currentRotation = 0; // Default rotation for stickers
@@ -404,6 +397,7 @@ thicknessSlider.addEventListener("input", (event: Event) => {
 
 //event listener for hue slider
 const hueSlider = hueSliderContainer.querySelector("input") as HTMLInputElement;
+
 hueSlider.addEventListener("input", (event: Event) => {
   const target = event.target as HTMLInputElement;
   currentHue = parseInt(target.value, 10);
@@ -423,6 +417,7 @@ hueSlider.addEventListener("input", (event: Event) => {
 const rotationSlider = rotationSliderContainer.querySelector(
   "input"
 ) as HTMLInputElement;
+
 rotationSlider.addEventListener("input", (event: Event) => {
   const target = event.target as HTMLInputElement;
   currentRotation = parseInt(target.value, 10);
@@ -532,6 +527,10 @@ exportButton.addEventListener("click", () => {
   exportCanvas.width = EXPORT_CANVAS_SIZE;
   exportCanvas.height = EXPORT_CANVAS_SIZE;
   const exportCtx = exportCanvas.getContext("2d")!;
+
+  // Set the export canvas background color to white
+  exportCtx.fillStyle = "white";
+  exportCtx.fillRect(0, 0, EXPORT_CANVAS_SIZE, EXPORT_CANVAS_SIZE);
 
   // Scale the context to fill the larger canvas
   exportCtx.scale(SCALE_FACTOR, SCALE_FACTOR);
