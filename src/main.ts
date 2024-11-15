@@ -1,4 +1,4 @@
-import "./style.css";
+ import "./style.css";
 
 // Constants for app name and canvas dimensions
 const APP_NAME = "Mako Paint 🎨";
