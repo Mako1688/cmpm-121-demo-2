@@ -25,12 +25,9 @@ a:hover {
 body {
   margin: 0;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  place-items: center;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #282828; /* Dark gray background */
 }
 
 h1 {
@@ -38,14 +35,17 @@ h1 {
   line-height: 1.1;
 }
 
-/* Center the app content */
 #app {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
 }
+
+#canvas {
+    border: 3px solid black;
+    border-radius: 10% 40% / 10% 10%;
+  }
 
 .logo {
   height: 6em;
@@ -63,115 +63,38 @@ h1 {
   padding: 2em;
 }
 
-/* General styles for documentation links */
 .read-the-docs {
   color: #888;
 }
 
-/* Button styles */
 button {
-  padding: 5px 10px;
-  font-size: 16px;
-  cursor: pointer;
   border-radius: 8px;
-  border: 2px solid transparent;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
   font-weight: 500;
   font-family: inherit;
   background-color: #1a1a1a;
+  cursor: pointer;
   transition: border-color 0.25s;
-  margin-top: 10px;
-  margin-right:10px;
 }
-
-/* Button hover state */
 button:hover {
-  border-color: #ffffff;
+  border-color: #646cff;
 }
-
-/* Button focus states */
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-/* Selected tool button style */
-.selectedTool {
-  border-color: #ff0000; /* Red border for selected tool */
-}
-
-/* Container for tool buttons */
-.tool-container {
-  display: flex;
-  flex-direction: column;
-  margin-right: 10px;
-}
-
-/* Container for canvas and tool buttons */
-.canvas-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 0 auto;
-}
-
-canvas {
-  border: 1px solid black;
-  border-radius: 8px;
-  box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.2);
-  margin-bottom: 10px;
-  margin-right:20px;
-  background-color: white; /* White background for canvas */
-}
-
-.button-container {
-  display: flex;
-  gap: 10px;
-  justify-content: center; /* Center the buttons */
-}
-
-.title {
-  text-align: center; /* Center the title text */
-}
-
-/* Container for sticker buttons */
-.sticker-container {
-  display: flex;
-  flex-direction: row;
-  margin-top: 10px;
-}
-
-.controls-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 20px;
-}
-
-.hue-color-display {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 1px solid black;
-  display: inline-block;
-  margin-left: 10px;
-}
-
-.slider-container,
-.sticker-container {
-  margin-bottom: 10px;
-  margin-right: 80px;
-}
-
-/* Light mode styles */
 @media (prefers-color-scheme: light) {
   :root {
-    color: #3489d3;
+    color: #213547;
     background-color: #ffffff;
   }
   a:hover {
     color: #747bff;
   }
   button {
-    background-color: #93bafa;
+    background-color: #f9f9f9;
   }
 }
